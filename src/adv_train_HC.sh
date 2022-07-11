@@ -1,0 +1,1 @@
+ python3 train_and_eval_model.py --mode "train" --config_file data/config_example_toad.txt --trn_data data/twitter_testHC_seenval/train.csv --dev_data data/twitter_testHC_seenval/validation.csv --score_key f_macro --topics_vocab twitter-topic-TRN-semi-sup.vocab.pkl --mode train
