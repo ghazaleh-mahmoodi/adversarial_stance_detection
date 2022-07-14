@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 
 train_data=data/twitter_testDT_seenval/development_setup_unlab/train.csv
 dev_data=data/twitter_testDT_seenval/development_setup_unlab/validation.csv

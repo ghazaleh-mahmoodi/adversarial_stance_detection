@@ -10,3 +10,5 @@ max_tok_len:20
 b:64
 h:127
 dropout:0.12
+blackout_start:51
+blackout_stop:56

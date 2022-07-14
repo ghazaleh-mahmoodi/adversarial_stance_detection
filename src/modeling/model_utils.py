@@ -1,3 +1,4 @@
+from cProfile import label
 from sklearn.metrics import f1_score, precision_score, recall_score
 import torch, pickle, time, json, copy
 import numpy as np
@@ -45,7 +46,7 @@ class TorchModelHandler:
         self.score_key = use_score
         self.blackout_start = params['blackout_start']
         self.blackout_stop = params['blackout_stop']
-
+        self.tune_embeds = False
         # GPU support
         self.use_cuda = use_cuda
         if self.use_cuda:
@@ -93,7 +94,6 @@ class TorchModelHandler:
             # sort the scores
             self.max_lst = sorted(self.max_lst, key=lambda p: p[0][self.score_key])  # lowest first
             # write top 5 scores
-            print("self.name ::: ", self.name)
             f = open('{}{}.top5_{}.txt'.format(self.result_path, self.name, self.score_key), 'w')  # overrides
             for p in self.max_lst:
                 f.write('Epoch: {}\nScore: {}\nAll Scores: {}\n'.format(p[1], p[0][self.score_key],
@@ -149,20 +149,23 @@ class TorchModelHandler:
                 self.embed_model.zero_grad()
 
             y_pred, labels = self.get_pred_with_grad(sample_batched)
-
+            
             label_tensor = torch.tensor(labels)
             if self.use_cuda:
                 # move labels to cuda if necessary
                 label_tensor = label_tensor.to('cuda')
-
-            if self.dataloader.weighting:
-                batch_loss = self.loss_function(y_pred, label_tensor)
-                weight_lst = torch.tensor([self.dataloader.topic2c2w[b['ori_topic']][b['label']]
-                                           for b in sample_batched])
-                if self.use_cuda:
-                    weight_lst = weight_lst.to('cuda')
-                graph_loss = torch.mean(batch_loss * weight_lst)
-            else:
+            try:
+                if self.dataloader.weighting:
+                    batch_loss = self.loss_function(y_pred, label_tensor)
+                    weight_lst = torch.tensor([self.dataloader.topic2c2w[b['ori_topic']][b['label']]
+                                            for b in sample_batched])
+                    if self.use_cuda:
+                        weight_lst = weight_lst.to('cuda')
+                    graph_loss = torch.mean(batch_loss * weight_lst)
+                else:
+                    graph_loss = self.loss_function(y_pred, label_tensor)
+            except:
+                
                 graph_loss = self.loss_function(y_pred, label_tensor)
 
             # self.loss = graph_loss.item()

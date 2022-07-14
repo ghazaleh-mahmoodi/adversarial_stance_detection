@@ -60,6 +60,7 @@ def select_hyperparams(config, output_name, model, is_arc, score_key='f_macro'):
         print("[trial {}] running cross validation".format(trial_num))
         start_time = time.time()
         if model == 'adv':
+            print("./adv_train.sh 1 {} 0 {} > {}log_t{}.txt".format(config_file_name, score_key, result_path, trial_num))
             os.system("./adv_train.sh 1 {} 0 {} > {}log_t{}.txt".format(config_file_name, score_key, result_path, trial_num))
         elif model == 'bicond':
             os.system("./bicond.sh {} {} > {}log_t{}.txt".format(config_file_name, score_key, result_path, trial_num))

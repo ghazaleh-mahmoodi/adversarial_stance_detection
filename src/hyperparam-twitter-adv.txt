@@ -3,7 +3,7 @@ num_search_trials:20
 name:BasicAdv-twitter-tuning-with-unlabaled-data
 tune_params:h,sd,td,trans_w,gamma
 b:64
-epochs:150
+epochs:10
 vec_dim:100
 vec_name:glove.twitter.27B.100d
 enc:bicond

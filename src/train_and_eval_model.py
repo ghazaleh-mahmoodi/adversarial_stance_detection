@@ -22,8 +22,8 @@ with warnings.catch_warnings():
 
 SEED = 0
 LOCAL = True
-#use_cuda = torch.cuda.is_available()
-use_cuda = False
+use_cuda = torch.cuda.is_available()
+
 
 def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, phases=False, is_adv=True):
     '''
@@ -225,7 +225,7 @@ if __name__ == '__main__':
 
     lr = float(config.get('lr', '0.001'))
     nl = 3
-    adv = False
+    adv = True
 
     # RUN
     print("Using cuda?: {}".format(use_cuda))
@@ -261,6 +261,8 @@ if __name__ == '__main__':
                                                       **kwargs)
 
     elif 'BiCond' in config['name']:
+        nl = 4
+        adv = False
         batch_args = {}
         input_layer = bm.WordEmbedLayer(vecs=vecs, use_cuda=use_cuda)
 

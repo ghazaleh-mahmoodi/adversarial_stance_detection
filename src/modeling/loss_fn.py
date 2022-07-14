@@ -85,17 +85,17 @@ class AdvBasicLoss(torch.nn.Module):
             else:
                 adversarial_loss = self.topic_loss(pred_info['adv_pred_'], pred_info['topic_i'])
 
-        if print_:
-            print("lrec - {}, lrec_topic - {}, ltrans - {}, llabel - {}, ladv - {}".format(lrec, lrec_topic, ltrans, llabel, ladv))
+        # if print_:
+            # print("lrec - {}, lrec_topic - {}, ltrans - {}, llabel - {}, ladv - {}".format(lrec, lrec_topic, ltrans, llabel, ladv))
 
         self.i += 1
         if self.use_adv:
-            if self.i % 100 == 0:
-                print("loss: {:.4f} + {:.4f} + {:.4f} - {:.4f}; adv: {:.4f}".format(lrec.item(), ltrans.item(), llabel.item(),
-                                                   (self.adv_param * ladv).item(), ladv))
+            # if self.i % 100 == 0:
+            #     print("loss: {:.4f} + {:.4f} + {:.4f} - {:.4f}; adv: {:.4f}".format(lrec.item(), ltrans.item(), llabel.item(),
+                                                #    (self.adv_param * ladv).item(), ladv))
             return lrec + lrec_topic + ltrans + llabel - self.adv_param * ladv, adversarial_loss
         else:
-            if self.i % 100 == 0:
-                print("loss: {:.4f} +  {:.4f} + {:.4f}; adv: {:.4f}".format(lrec.item(), ltrans.item(), llabel.item(),
-                                                     ladv))
+            # if self.i % 100 == 0:
+            #     print("loss: {:.4f} +  {:.4f} + {:.4f}; adv: {:.4f}".format(lrec.item(), ltrans.item(), llabel.item(),
+                                                    #  ladv))
             return lrec + lrec_topic + ltrans + llabel, adversarial_loss
