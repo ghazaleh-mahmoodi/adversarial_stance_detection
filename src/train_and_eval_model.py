@@ -8,7 +8,17 @@ import torch.nn as nn
 from itertools import chain
 import pandas as pd
 import copy
+from tqdm import tqdm 
 from transformers import get_linear_schedule_with_warmup
+
+import warnings
+
+def fxn():
+    warnings.warn("deprecated", DeprecationWarning)
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    fxn()
 
 SEED = 0
 LOCAL = True
@@ -28,7 +38,7 @@ def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, ph
     '''
     trn_scores_dict = {}
     dev_scores_dict = {}
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs)):
         if is_adv:
             learning_rate = model_handler.get_learning_rate()
         if phases:
@@ -39,7 +49,7 @@ def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, ph
         if epoch >= num_warm:
             if verbose:
                 # print training loss and training (& dev) scores, ignores the first few epochs
-                print("training loss: {}".format(model_handler.loss))
+                # print("training loss: {}".format(model_handler.loss))
                 # eval model on training data
                 trn_scores = eval_helper(model_handler, data_name='TRAIN')
                 trn_scores_dict[epoch] = copy.deepcopy(trn_scores)
@@ -65,7 +75,7 @@ def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, ph
     if dev_data is not None:
         eval_helper(model_handler,  data_name='DEV', data=dev_data)
     # Can uncomment to save epoch_level_scores
-    #save_epoch_level_results_to_csv(trn_scores_dict, dev_scores_dict, model_handler.result_path, model_handler.name, is_adv)
+    save_epoch_level_results_to_csv(trn_scores_dict, dev_scores_dict, model_handler.result_path, model_handler.name, is_adv)
 
 
 def save_epoch_level_results_to_csv(trn_scores_dict, dev_scores_dict, output_path, name, is_adv):
@@ -143,6 +153,7 @@ if __name__ == '__main__':
     parser.add_argument('--score_key', dest='score_key', help='Score key for optimization', required=False,
                         default='f_macro')
     parser.add_argument('--saved_model_file_name', dest='saved_model_file_name', required=False, default=None)
+    
     args = parser.parse_args()
 
     torch.manual_seed(SEED)

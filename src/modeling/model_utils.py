@@ -1,7 +1,6 @@
-import torch, pickle, time, json, copy
 from sklearn.metrics import f1_score, precision_score, recall_score
+import torch, pickle, time, json, copy
 import numpy as np
-from tqdm import tqdm 
 
 class TorchModelHandler:
     '''
@@ -94,6 +93,7 @@ class TorchModelHandler:
             # sort the scores
             self.max_lst = sorted(self.max_lst, key=lambda p: p[0][self.score_key])  # lowest first
             # write top 5 scores
+            print("self.name ::: ", self.name)
             f = open('{}{}.top5_{}.txt'.format(self.result_path, self.name, self.score_key), 'w')  # overrides
             for p in self.max_lst:
                 f.write('Epoch: {}\nScore: {}\nAll Scores: {}\n'.format(p[1], p[0][self.score_key],
@@ -137,11 +137,11 @@ class TorchModelHandler:
         '''
         Runs one epoch of training on this model.
         '''
-        print("[{}] epoch {}".format(self.name, self.epoch))
+        # print("[{}] epoch {}".format(self.name, self.epoch))
         self.model.train()
         self.loss = 0.  # clear the loss
         start_time = time.time()
-        for i_batch, sample_batched in tqdm(enumerate(self.dataloader)):
+        for i_batch, sample_batched in enumerate(self.dataloader):
 
             # zero gradients before EVERY optimizer step
             self.model.zero_grad()
@@ -174,7 +174,7 @@ class TorchModelHandler:
 
         end_time = time.time()
         # self.dataloader.reset()
-        print("   took: {:.1f} min".format((end_time - start_time)/60.))
+        # print("   took: {:.1f} min".format((end_time - start_time)/60.))
         self.epoch += 1
 
     def compute_scores(self, score_fn, true_labels, pred_labels, class_wise, name):
@@ -191,7 +191,7 @@ class TorchModelHandler:
         labels = [i for i in range(2)]
         n = float(len(labels))
 
-        vals = score_fn(true_labels, pred_labels, labels=labels, average=None)
+        vals = score_fn(true_labels, pred_labels, labels=labels, average=None, zero_division=0)
         self.score_dict['{}_macro'.format(name)] = sum(vals) / n
 
         if class_wise:
@@ -289,9 +289,9 @@ class TorchModelHandler:
         '''
         # Passing data_name to eval_model as evaluation of adv model on train and dev are different
         scores = self.eval_model(data=data, class_wise=class_wise, data_name=data_name)
-        print("Evaling on \"{}\" data".format(data_name))
-        for s_name, s_val in scores.items():
-            print("{}: {}".format(s_name, s_val))
+        # print("Evaling on \"{}\" data".format(data_name))
+        # for s_name, s_val in scores.items():
+        #     print("{}: {}".format(s_name, s_val))
         return scores
 
     def score(self, pred_labels, true_labels, class_wise, t2pred, marks, topic_wise=False):
@@ -419,17 +419,20 @@ class AdvTorchModelHandler(TorchModelHandler):
         '''
         if self.epoch > 0:  # self.loss_function.use_adv:
             self.loss_function.update_param_using_p(self.epoch)  # update the adversarial parameter
-        print("[{}] epoch {}".format(self.name, self.epoch))
-        print("Adversarial parameter rho - {}".format(self.loss_function.adv_param))
-        print("Learning rate - {}".format(self.get_learning_rate()))
+        if self.epoch ==  0:   
+            print("[{}] epoch {}".format(self.name, self.epoch))
+            print("Adversarial parameter rho - {}".format(self.loss_function.adv_param))
+            print("Learning rate - {}".format(self.get_learning_rate()))
+            print(len(self.dataloader))
+
         self.model.train()
         # clear the loss
         self.loss = 0.
         self.adv_loss = 0
         # TRAIN
         start_time = time.time()
-        print(len(self.dataloader))
-        for i_batch, sample_batched in tqdm(enumerate(self.dataloader)):
+        
+        for i_batch, sample_batched in enumerate(self.dataloader):
             # print("Batch {} in epoch {} -".format(i_batch, self.epoch))
             # zero gradients before EVERY optimizer step
             self.model.zero_grad()
@@ -455,7 +458,7 @@ class AdvTorchModelHandler(TorchModelHandler):
             self.model.zero_grad()
             # if self.loss_function.use_adv:
             if True:  # self.loss_function.use_adv: - always do this, train adversary a bit first on it's own
-                print("Adv loss", graph_loss_adv.item())
+                # print("Adv loss", graph_loss_adv.item())
                 graph_loss_adv.backward()
                 self.adv_optimizer.step()
                 # only on adv params
