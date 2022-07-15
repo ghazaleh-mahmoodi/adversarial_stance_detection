@@ -1,5 +1,6 @@
 # Adversarial Learning for Zero-Shot Stance Detection on Social Media
 
+This repository contains the data and source code used in NAACL 2021 main conference paper [Adversarial Learning for Zero-Shot Stance Detection on Social Media](https://aclanthology.org/2021.naacl-main.379.pdf). 
 ## Requirements
 python 3.7.6 <br/>
 transformers 3.4.0 <br/>
@@ -8,6 +9,25 @@ numpy 1.18.1 <br/>
 pandas 1.0.3 <br/>
 scipy 1.4.1
 
+
+## Instalation
+
+Create an environment with dependencies specified in stance_local_env.yml (note that this can take some time):
+
+```bash
+    conda env create -f stance_local_env.yml
+```
+
+Activate the new environment:
+```bash   
+    conda activate stance_env
+```
+
+To deactivate an active environment, use
+
+```bash   
+    conda deactivate
+```
 
 ## Training TOAD
 cd src/ 
