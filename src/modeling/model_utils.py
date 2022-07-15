@@ -229,7 +229,7 @@ class TorchModelHandler:
 
         t2pred = dict()
         for sample_batched in data:
-            print("sample_batched: ", len(sample_batched))
+            #print("sample_batched: ", len(sample_batched))
             with torch.no_grad():
                 # print(sample_batched)
                 y_pred, labels = self.get_pred_noupdate(sample_batched)
