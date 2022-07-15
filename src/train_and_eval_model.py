@@ -10,20 +10,13 @@ import pandas as pd
 import copy
 from tqdm import tqdm 
 from transformers import get_linear_schedule_with_warmup
+import json
 
-import warnings
-
-def fxn():
-    warnings.warn("deprecated", DeprecationWarning)
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    fxn()
 
 SEED = 0
 LOCAL = True
-use_cuda = torch.cuda.is_available()
-
+# use_cuda = torch.cuda.is_available()
+use_cuda = False
 
 def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, phases=False, is_adv=True):
     '''
@@ -176,14 +169,14 @@ if __name__ == '__main__':
     else:
         vec_path = 'data/resources'     #Need to set path to vectors here
 
-    if 'bert' not in config['name']:
+    if 'none' not in config['name']:
 
         vec_name = config['vec_name']
         vec_dim = int(config['vec_dim'])
 
         vecs = data_utils.load_vectors('{}/{}.vectorsF.npy'.format(vec_path, vec_name),
                                        dim=vec_dim, seed=SEED)
-
+    print(config)
     #############
     # LOAD DATA #
     #############
@@ -225,14 +218,14 @@ if __name__ == '__main__':
 
     lr = float(config.get('lr', '0.001'))
     nl = 3
-    adv = True
+    adv = False
 
     # RUN
     print("Using cuda?: {}".format(use_cuda))
 
     if 'bert' in config['name']:
         batch_args = {'keep_sen': False}
-        setup_fn = data_utils.setup_helper_bert_ffnn
+        setup_fn = data_utils.setup_helper_bicond
         loss_fn = nn.CrossEntropyLoss()
 
         input_layer = None
@@ -261,9 +254,9 @@ if __name__ == '__main__':
                                                       **kwargs)
 
     elif 'BiCond' in config['name']:
+        batch_args = {}
         nl = 4
         adv = False
-        batch_args = {}
         input_layer = bm.WordEmbedLayer(vecs=vecs, use_cuda=use_cuda)
 
         setup_fn = data_utils.setup_helper_bicond
@@ -290,9 +283,10 @@ if __name__ == '__main__':
         model_handler = model_utils.TorchModelHandler(use_cuda=use_cuda,
                                                       checkpoint_path=config.get('ckp_path', 'data/checkpoints/'),
                                                       result_path=config.get('res_path','data/gen-stance/'),
-                                                      **kwargs)
+                                                    **kwargs)
 
     elif 'BasicAdv' in config['name']:
+        adv=True
         batch_args = {}
         input_layer = bm.WordEmbedLayer(vecs=vecs, use_cuda=use_cuda)
         setup_fn = data_utils.setup_helper_adv
@@ -374,4 +368,8 @@ if __name__ == '__main__':
     elif args.mode == 'eval':
         # Evaluate saved model
         model_handler.load(filename=args.saved_model_file_name)
-        eval_helper(model_handler,'DEV',data=dev_dataloader)
+        scores = eval_helper(model_handler,'Eval',data=dev_dataloader)
+        
+        print("Evaling on \"{}\" data".format(args.mode))
+        for s_name, s_val in scores.items():
+            print("{}: {}".format(s_name, s_val))

@@ -38,6 +38,7 @@ class BiCondLSTMModel(torch.nn.Module):
 
         y_pred = self.pred_layer(combo_fb_hn)  # (B, 2)
         return y_pred
+        
 
 
 

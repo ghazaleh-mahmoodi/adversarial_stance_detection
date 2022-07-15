@@ -1,4 +1,3 @@
-from cProfile import label
 from sklearn.metrics import f1_score, precision_score, recall_score
 import torch, pickle, time, json, copy
 import numpy as np
@@ -99,7 +98,6 @@ class TorchModelHandler:
                 f.write('Epoch: {}\nScore: {}\nAll Scores: {}\n'.format(p[1], p[0][self.score_key],
                                                                             json.dumps(p[0])))
             # save best model step, if its this one
-            print(curr_score, prev_max)
             if curr_score > prev_max or self.epoch == 1:
                 self.save(num='BEST')
 
@@ -149,7 +147,7 @@ class TorchModelHandler:
                 self.embed_model.zero_grad()
 
             y_pred, labels = self.get_pred_with_grad(sample_batched)
-            
+
             label_tensor = torch.tensor(labels)
             if self.use_cuda:
                 # move labels to cuda if necessary
@@ -165,9 +163,7 @@ class TorchModelHandler:
                 else:
                     graph_loss = self.loss_function(y_pred, label_tensor)
             except:
-                
                 graph_loss = self.loss_function(y_pred, label_tensor)
-
             # self.loss = graph_loss.item()
             self.loss += graph_loss.item()  # update loss
 
@@ -193,7 +189,7 @@ class TorchModelHandler:
         '''
         labels = [i for i in range(2)]
         n = float(len(labels))
-
+        
         vals = score_fn(true_labels, pred_labels, labels=labels, average=None, zero_division=0)
         self.score_dict['{}_macro'.format(name)] = sum(vals) / n
 
@@ -233,6 +229,7 @@ class TorchModelHandler:
 
         t2pred = dict()
         for sample_batched in data:
+            print("sample_batched: ", len(sample_batched))
             with torch.no_grad():
                 # print(sample_batched)
                 y_pred, labels = self.get_pred_noupdate(sample_batched)
@@ -292,6 +289,7 @@ class TorchModelHandler:
         '''
         # Passing data_name to eval_model as evaluation of adv model on train and dev are different
         scores = self.eval_model(data=data, class_wise=class_wise, data_name=data_name)
+
         # print("Evaling on \"{}\" data".format(data_name))
         # for s_name, s_val in scores.items():
         #     print("{}: {}".format(s_name, s_val))

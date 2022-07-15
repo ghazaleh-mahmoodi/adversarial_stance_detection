@@ -151,3 +151,18 @@ def setup_helper_adv(args, use_cuda):
     top_mask = torch.tensor(args['top_mask'], device=device) # (B, C)
 
     return txt_E, top_E, txt_l, top_l, txt_mask, top_mask
+
+def setup_helper_bert_ffnn(args, use_cuda):
+    device = 'cuda' if use_cuda else 'cpu'
+    txt_E= args['avg_txt_E'].to(device)  # (B,E)
+    top_E = args['avg_top_E'].to(device)  # (B,E)
+    return txt_E, top_E
+
+
+def setup_helper_bert_attffnn(args, use_cuda):
+    device = 'cuda' if use_cuda else 'cpu'
+    txt_E= args['txt_E'].to(device)  # (B,E)
+    top_E = args['top_E'].to(device)  # (B,E)
+    top_rep = args['avg_top_E'].to(device)
+    text_l = args['txt_l'].to(device)
+    return txt_E, top_E, top_rep, text_l
