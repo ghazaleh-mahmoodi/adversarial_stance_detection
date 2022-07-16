@@ -61,6 +61,45 @@ def prepare_batch(sample_batched, **kwargs):
 
     return args
 
+def prepare_batch_bicond(sample_batched, **kwargs):
+    '''
+    Prepares a batch of data to be used in training or evaluation. Includes the text reversed.
+    :param sample_batched: a list of dictionaries, where each is a sample
+    :return: a dictionary containing:
+            a tensor of all the text instances,
+            a tensor of all topic instances,
+            a list of labels for the text,topic instances
+            a list of the text lengths
+            a list of the topic lengths
+            a list with the original texts
+            a list with the original topics
+            AND (depending on flags)
+            a tensor of the inputs in the format CLS text SEP topic SEP (for Bert)
+            a tensor of the token type ids (for Bert)
+            a tensor with the generalized topic representations
+    '''
+    text_lens = np.array([b['txt_l'] for b in sample_batched if b['seen']==1])
+    topic_batch = torch.tensor([b['topic'] for b in sample_batched if b['seen']==1])
+    labels = [b['label'] for b in sample_batched if b['seen']==1]
+    top_lens = [b['top_l'] for b in sample_batched if b['seen']==1]
+
+    raw_text_batch = [b['ori_text'] for b in sample_batched if b['seen']==1]
+    raw_top_batch = [b['ori_topic'] for b in sample_batched if b['seen']==1]
+
+    text_batch = torch.tensor([b['text'] for b in sample_batched if b['seen']==1])
+
+    args = {'text': text_batch, 'topic': topic_batch, 'labels': labels,
+            'txt_l': text_lens, 'top_l': top_lens,
+            'ori_text': raw_text_batch, 'ori_topic': raw_top_batch}
+
+    if 'text_topic' in sample_batched[0]:
+        args['text_topic_batch'] = torch.tensor([b['text_topic'] for b in sample_batched if b['seen']==1] )
+        args['token_type_ids'] = torch.tensor([b['token_type_ids'] for b in sample_batched if b['seen']==1])
+
+    if 'topic_rep_id' in sample_batched[0]:
+        args['topic_rep_ids'] = torch.tensor([b['topic_rep_id'] for b in sample_batched if b['seen']==1])
+
+    return args
 
 def prepare_batch_adv(sample_batched, **kwargs):
     args = prepare_batch(sample_batched, **kwargs)

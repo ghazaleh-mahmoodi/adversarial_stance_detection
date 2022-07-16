@@ -15,8 +15,8 @@ import json
 
 SEED = 0
 LOCAL = True
-# use_cuda = torch.cuda.is_available()
-use_cuda = False
+use_cuda = torch.cuda.is_available()
+#use_cuda = False
 
 def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, phases=False, is_adv=True):
     '''
@@ -176,28 +176,37 @@ if __name__ == '__main__':
 
         vecs = data_utils.load_vectors('{}/{}.vectorsF.npy'.format(vec_path, vec_name),
                                        dim=vec_dim, seed=SEED)
-    print(config)
+
     #############
     # LOAD DATA #
     #############
     # load training data
     vocab_name = '{}/{}.vocabF.pkl'.format(vec_path, vec_name)
-    data = datasets.StanceData(args.trn_data, vocab_name, topic_name='{}/{}'.format(vec_path, args.topics_vocab),
-                           pad_val=len(vecs) - 1,
-                           max_tok_len=int(config.get('max_tok_len', '200')),
-                           max_sen_len=int(config.get('max_sen_len', '10')),
-                           max_top_len=int(config.get('max_top_len', '5')))
     
+    if 'BiCond' in config['name']:
+        is_bicond_LSTM=True
+    else:
+        is_bicond_LSTM=False
+
+    data = datasets.StanceData(args.trn_data, vocab_name, topic_name='{}/{}'.format(vec_path, args.topics_vocab),
+                        pad_val=len(vecs) - 1,
+                        max_tok_len=int(config.get('max_tok_len', '200')),
+                        max_sen_len=int(config.get('max_sen_len', '10')),
+                        max_top_len=int(config.get('max_top_len', '5')),
+                        is_bicond=is_bicond_LSTM)
+        
     dataloader = data_utils.DataSampler(data,  batch_size=int(config['b']))
 
     # load dev data if specified
     if args.dev_data is not None:
+        
         dev_data = datasets.StanceData(args.dev_data, vocab_name, topic_name=None,
-                                       pad_val=len(vecs) - 1,
-                                       max_tok_len=int(config.get('max_tok_len', '200')),
-                                       max_sen_len=int(config.get('max_sen_len', '10')),
-                                       max_top_len=int(config.get('max_top_len', '5')),
-                                       use_tar_in_twe=('use_tar_in_twe' in config))
+                                    pad_val=len(vecs) - 1,
+                                    max_tok_len=int(config.get('max_tok_len', '200')),
+                                    max_sen_len=int(config.get('max_sen_len', '10')),
+                                    max_top_len=int(config.get('max_top_len', '5')),
+                                    is_bicond=is_bicond_LSTM,
+                                    use_tar_in_twe=('use_tar_in_twe' in config))
 
         dev_dataloader = data_utils.DataSampler(dev_data, batch_size=int(config['b']), shuffle=False)
 
@@ -255,21 +264,20 @@ if __name__ == '__main__':
 
     elif 'BiCond' in config['name']:
         batch_args = {}
-        nl = 4
         adv = False
         input_layer = bm.WordEmbedLayer(vecs=vecs, use_cuda=use_cuda)
 
         setup_fn = data_utils.setup_helper_bicond
 
         loss_fn = nn.CrossEntropyLoss()
-
+        print("input_layer.dim : ", input_layer.dim)
         model = bm.BiCondLSTMModel(int(config['h']), embed_dim=input_layer.dim,
                                    input_dim=(int(config['in_dim']) if 'in_dim' in config['name'] else input_layer.dim),
                                    drop_prob=float(config['dropout']), use_cuda=use_cuda,
                                    num_labels=nl)
         o = optim_fn(model.parameters(), lr=lr)
 
-        bf = data_utils.prepare_batch
+        bf = data_utils.prepare_batch_bicond
 
         kwargs = {'model': model, 'embed_model': input_layer, 'dataloader': dataloader,
                   'batching_fn': bf,
@@ -368,7 +376,8 @@ if __name__ == '__main__':
     elif args.mode == 'eval':
         # Evaluate saved model
         model_handler.load(filename=args.saved_model_file_name)
-        scores = eval_helper(model_handler,'Eval',data=dev_dataloader)
+        print(dev_dataloader)
+        scores = eval_helper(model_handler,'Dev',data=dev_dataloader)
         
         print("Evaling on \"{}\" data".format(args.mode))
         for s_name, s_val in scores.items():

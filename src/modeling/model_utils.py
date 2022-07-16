@@ -147,7 +147,7 @@ class TorchModelHandler:
                 self.embed_model.zero_grad()
 
             y_pred, labels = self.get_pred_with_grad(sample_batched)
-
+            
             label_tensor = torch.tensor(labels)
             if self.use_cuda:
                 # move labels to cuda if necessary
@@ -164,6 +164,7 @@ class TorchModelHandler:
                     graph_loss = self.loss_function(y_pred, label_tensor)
             except:
                 graph_loss = self.loss_function(y_pred, label_tensor)
+            
             # self.loss = graph_loss.item()
             self.loss += graph_loss.item()  # update loss
 
@@ -229,9 +230,7 @@ class TorchModelHandler:
 
         t2pred = dict()
         for sample_batched in data:
-            #print("sample_batched: ", len(sample_batched))
             with torch.no_grad():
-                # print(sample_batched)
                 y_pred, labels = self.get_pred_noupdate(sample_batched)
 
                 label_tensor = torch.tensor(labels)
@@ -363,7 +362,6 @@ class TorchModelHandler:
                     for the batch (as a numpy array)
         '''
         args = self.batching_fn(sample_batched, **self.batching_kwargs)
-
         with torch.no_grad():
             if not self.fine_tune:
                 # EMBEDDING

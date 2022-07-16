@@ -1,4 +1,4 @@
-declare -a topics=("HC" "DT" "FM" "LA" "CC" "A")
+declare -a topics=("HC")
 
 for topic in  "${topics[@]}"
 do

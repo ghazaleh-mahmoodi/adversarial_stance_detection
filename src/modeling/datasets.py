@@ -11,7 +11,7 @@ class StanceData(Dataset):
     '''
     def __init__(self, data_name, vocab_name, topic_name=None, name='',
                  max_sen_len=10, max_tok_len=200, max_top_len=5, binary=False,
-                 pad_val=0, is_bert=False, add_special_tokens=True, use_tar_in_twe=False):
+                 pad_val=0, is_bert=False, is_bicond=False, add_special_tokens=True, use_tar_in_twe=False):
         self.data_name = data_name
         self.data_file = pd.read_csv(data_name)
         if vocab_name is not None:
@@ -24,6 +24,7 @@ class StanceData(Dataset):
         self.pad_value = pad_val
         self.topic2i = pickle.load(open(topic_name, 'rb')) if topic_name is not None else dict()
         self.is_bert = is_bert
+        self.is_bicond_lstm = is_bicond
         self.add_special_tokens = add_special_tokens
         self.tar_in_twe = ('target_in_tweet' in self.data_file.columns)
         self.use_tar_in_twe = use_tar_in_twe
@@ -33,7 +34,7 @@ class StanceData(Dataset):
 
         self.preprocess_data()
 
-        if self.is_bert:
+        if self.is_bert or self.is_bicond_lstm:
             # filter unlabeled examples for Twitter
             self.data_file = self.data_file.loc[self.data_file['label'] != 3]
             self.data_file.reset_index(inplace=True)  # reset the index so we can access correctly later
