@@ -188,11 +188,17 @@ if __name__ == '__main__':
     else:
         is_bicond_LSTM=False
 
+    if 'bert' in config['name']:
+        is_bert_flag=True
+    else:
+        is_bert_flag=False
+
     data = datasets.StanceData(args.trn_data, vocab_name, topic_name='{}/{}'.format(vec_path, args.topics_vocab),
                         pad_val=len(vecs) - 1,
                         max_tok_len=int(config.get('max_tok_len', '200')),
                         max_sen_len=int(config.get('max_sen_len', '10')),
                         max_top_len=int(config.get('max_top_len', '5')),
+                        is_bert=is_bert_flag,
                         is_bicond=is_bicond_LSTM)
         
     dataloader = data_utils.DataSampler(data,  batch_size=int(config['b']))
@@ -205,6 +211,7 @@ if __name__ == '__main__':
                                     max_tok_len=int(config.get('max_tok_len', '200')),
                                     max_sen_len=int(config.get('max_sen_len', '10')),
                                     max_top_len=int(config.get('max_top_len', '5')),
+                                    is_bert=is_bert_flag,
                                     is_bicond=is_bicond_LSTM,
                                     use_tar_in_twe=('use_tar_in_twe' in config))
 

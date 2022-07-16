@@ -31,6 +31,7 @@ class StanceData(Dataset):
 
         if self.is_bert:
             self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+            #self.tokenizer = BertTokenizer.from_pretrained('uncased_L-12_H-768_A-12/')
 
         self.preprocess_data()
 
@@ -71,7 +72,8 @@ class StanceData(Dataset):
             self.data_file.at[i, 'num_sens'] = num_sens
             self.data_file.at[i, 'text_topic_idx'] = text_topic['input_ids']
             self.data_file.at[i, 'token_type_ids'] = text_topic['token_type_ids']
-            self.data_file.at[i, 'attention_mask'] = text_topic['attention_mask']
+            # print(len(text_topic['attention_mask']))
+            # self.data_file.at[i, 'attention_mask'] = text_topic['attention_mask']
         print("...finished pre-processing for BERT")
         if 'topic_str' not in self.data_file.columns:
             self.data_file['topic_str'] = topic_str_lst

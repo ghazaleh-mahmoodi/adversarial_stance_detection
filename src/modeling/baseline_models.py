@@ -128,7 +128,8 @@ class JointSeqBERTLayer(torch.nn.Module):
 
         self.num_labels = num_labels
         self.use_cuda = use_cuda
-        self.bert_layer = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+        # self.bert_layer = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+        self.bert_layer = BertForSequenceClassification.from_pretrained('uncased_L-12_H-768_A-12/')
 
         self.dim = 768
         if self.use_cuda:
