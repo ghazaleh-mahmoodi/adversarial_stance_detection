@@ -78,23 +78,23 @@ def prepare_batch_bicond(sample_batched, **kwargs):
             a tensor of the token type ids (for Bert)
             a tensor with the generalized topic representations
     '''
-    text_lens = np.array([b['txt_l'] for b in sample_batched if b['seen']==1])
-    topic_batch = torch.tensor([b['topic'] for b in sample_batched if b['seen']==1])
-    labels = [b['label'] for b in sample_batched if b['seen']==1]
-    top_lens = [b['top_l'] for b in sample_batched if b['seen']==1]
+    text_lens = np.array([b['txt_l'] for b in sample_batched])
+    topic_batch = torch.tensor([b['topic'] for b in sample_batched])
+    labels = [b['label'] for b in sample_batched]
+    top_lens = [b['top_l'] for b in sample_batched]
 
-    raw_text_batch = [b['ori_text'] for b in sample_batched if b['seen']==1]
-    raw_top_batch = [b['ori_topic'] for b in sample_batched if b['seen']==1]
+    raw_text_batch = [b['ori_text'] for b in sample_batched]
+    raw_top_batch = [b['ori_topic'] for b in sample_batched]
 
-    text_batch = torch.tensor([b['text'] for b in sample_batched if b['seen']==1])
+    text_batch = torch.tensor([b['text'] for b in sample_batched])
 
     args = {'text': text_batch, 'topic': topic_batch, 'labels': labels,
             'txt_l': text_lens, 'top_l': top_lens,
             'ori_text': raw_text_batch, 'ori_topic': raw_top_batch}
 
     if 'text_topic' in sample_batched[0]:
-        args['text_topic_batch'] = torch.tensor([b['text_topic'] for b in sample_batched if b['seen']==1] )
-        args['token_type_ids'] = torch.tensor([b['token_type_ids'] for b in sample_batched if b['seen']==1])
+        args['text_topic_batch'] = torch.tensor([b['text_topic'] for b in sample_batched] )
+        args['token_type_ids'] = torch.tensor([b['token_type_ids'] for b in sample_batched])
 
     if 'topic_rep_id' in sample_batched[0]:
         args['topic_rep_ids'] = torch.tensor([b['topic_rep_id'] for b in sample_batched if b['seen']==1])

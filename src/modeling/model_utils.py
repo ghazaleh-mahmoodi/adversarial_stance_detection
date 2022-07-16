@@ -173,8 +173,6 @@ class TorchModelHandler:
             self.optimizer.step()
 
         end_time = time.time()
-        # self.dataloader.reset()
-        # print("   took: {:.1f} min".format((end_time - start_time)/60.))
         self.epoch += 1
 
     def compute_scores(self, score_fn, true_labels, pred_labels, class_wise, name):
@@ -422,7 +420,6 @@ class AdvTorchModelHandler(TorchModelHandler):
             print("[{}] epoch {}".format(self.name, self.epoch))
             print("Adversarial parameter rho - {}".format(self.loss_function.adv_param))
             print("Learning rate - {}".format(self.get_learning_rate()))
-            print(len(self.dataloader))
 
         self.model.train()
         # clear the loss

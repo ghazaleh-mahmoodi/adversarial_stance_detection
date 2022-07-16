@@ -15,8 +15,8 @@ import json
 
 SEED = 0
 LOCAL = True
-use_cuda = torch.cuda.is_available()
-#use_cuda = False
+#use_cuda = torch.cuda.is_available()
+use_cuda = False
 
 def train(model_handler, num_epochs, verbose=True, dev_data=None, num_warm=0, phases=False, is_adv=True):
     '''
